@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PDF Analysis Tool</title>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf_viewer.min.css"/>
+
+<style>
+body { margin:0; font-family:Arial; background:#f8fafc; }
+.top-bar { background:#0f172a; padding:10px; display:flex; gap:10px; }
+.top-bar button { background:#3b82f6; color:white; border:none; padding:6px 14px; border-radius:6px; }
+.container { display:flex; height:calc(100vh - 50px); }
+#pdfContainer { width:70%; padding:20px; overflow:auto; border-right:2px solid #e5e7eb; }
+#analysisPanel { width:30%; padding:15px; display:flex; flex-direction:column; gap:10px; }
+.page { position:relative; margin-bottom:25px; }
+canvas { pointer-events:none; }
+.textLayer { position:absolute; inset:0; user-select:text; pointer-events:auto; }
+.textLayer ::selection { background:rgba(255,255,0,0.6); }
+textarea { width:100%; height:220px; }
+</style>
+</head>
+
+<body>
+
+<div class="top-bar">
+    <input type="file" id="pdfInput">
+    <button id="loadBtn">Load PDF</button>
+</div>
+
+<div class="container">
+    <div id="pdfContainer"></div>
+
+    <div id="analysisPanel">
+        <h3>Analysis Panel</h3>
+
+        <input id="queryBox" placeholder="Ask: participants and ballots completed">
+        <button onclick="runQuery()">Run Query</button>
+
+        <textarea id="output" readonly></textarea>
+
+        <div>
+            <button onclick="renderChart('bar')">Bar</button>
+            <button onclick="renderChart('pie')">Pie</button>
+            <button onclick="renderChart('line')">Line</button>
+        </div>
+
+        <canvas id="chartCanvas"></canvas>
+    </div>
+</div>
+
+<script>
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+ "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+
+let selectedFile=null;
+let chartInstance=null;
+let currentChartData=null;
+
+const pdfContainer=document.getElementById("pdfContainer");
+const output=document.getElementById("output");
+
+document.getElementById("pdfInput").onchange=e=>selectedFile=e.target.files[0];
+
+document.getElementById("loadBtn").onclick=async()=>{
+ if(!selectedFile) return alert("Select PDF");
+
+ const fd=new FormData();
+ fd.append("pdf",selectedFile);
+ await fetch("/upload/",{method:"POST",body:fd});
+
+ pdfContainer.innerHTML="";
+ const pdf=await pdfjsLib.getDocument(URL.createObjectURL(selectedFile)).promise;
+
+ for(let i=1;i<=pdf.numPages;i++){
+  const page=await pdf.getPage(i);
+  const vp=page.getViewport({scale:1.5});
+
+  const pageDiv=document.createElement("div");
+  pageDiv.className="page";
+  pageDiv.style.width=vp.width+"px";
+  pageDiv.style.height=vp.height+"px";
+
+  const canvas=document.createElement("canvas");
+  canvas.width=vp.width; canvas.height=vp.height;
+  pageDiv.appendChild(canvas);
+  pdfContainer.appendChild(pageDiv);
+
+  await page.render({canvasContext:canvas.getContext("2d"),viewport:vp}).promise;
+
+  const textLayer=document.createElement("div");
+  textLayer.className="textLayer";
+  pageDiv.appendChild(textLayer);
+
+  const tc=await page.getTextContent();
+  pdfjsLib.renderTextLayer({textContent:tc,container:textLayer,viewport:vp,textDivs:[]});
+ }
+};
+
+// 🔹 Highlight → row analysis
+document.addEventListener("mouseup",async()=>{
+ const text=window.getSelection().toString().trim();
+ if(!text) return;
+
+ const res=await fetch("/analyze/",{
+  method:"POST",
+  headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({keyword:text})
+ });
+
+ const data=await res.json();
+ output.value="";
+ if(!data.rows.length){ currentChartData=null; return; }
+
+ const row=data.rows[0];
+ const labels=[],values=[];
+
+ for(let k in row){
+  output.value+=`${k}: ${row[k]}\n`;
+  const n=parseFloat(row[k]);
+  if(!isNaN(n)){ labels.push(k); values.push(n); }
+ }
+
+ currentChartData={title:text,labels,values};
+ renderChart("bar");
+});
+
+// 🔹 Query entire table
+async function runQuery(){
+ const q=document.getElementById("queryBox").value.trim();
+ if(!q) return;
+
+ const res=await fetch("/query/",{
+  method:"POST",
+  headers:{"Content-Type":"application/json"},
+  body:JSON.stringify({query:q})
+ });
+
+ const data=await res.json();
+ output.value="";
+ const labels=[],values=[];
+
+ for(let k in data.results){
+  output.value+=`${k}: ${data.results[k]}\n`;
+  labels.push(k); values.push(data.results[k]);
+ }
+
+ currentChartData={title:"Query Result",labels,values};
+ renderChart("bar");
+}
+
+function renderChart(type){
+ if(!currentChartData) return;
+ const ctx=document.getElementById("chartCanvas");
+ if(chartInstance) chartInstance.destroy();
+
+ chartInstance=new Chart(ctx,{
+  type,
+  data:{labels:currentChartData.labels,
+   datasets:[{label:currentChartData.title,data:currentChartData.values}]},
+  options:{responsive:true}
+ });
+}
+</script>
+
+</body>
+</html>

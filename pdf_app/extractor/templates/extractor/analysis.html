@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Data Analysis</title>
+
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <h1>PDF Data Analysis Results</h1>
+
+    <!-- ============================= -->
+    <!-- Statistical Summary -->
+    <!-- ============================= -->
+    <h2>Statistical Summary</h2>
+    {{ analysis_table|safe }}
+
+    <!-- ============================= -->
+    <!-- Automated Insights -->
+    <!-- ============================= -->
+    <h3>Automated Insights</h3>
+    <ul>
+        {% for insight in insights %}
+            <li>{{ insight }}</li>
+        {% empty %}
+            <li>No insights available.</li>
+        {% endfor %}
+    </ul>
+
+    <!-- ============================= -->
+    <!-- Chart -->
+    <!-- ============================= -->
+
+
+   <h2>Mean Value Chart</h2>
+<canvas id="myChart" width="400" height="200"></canvas>
+
+{{ labels|json_script:"labels-data" }}
+{{ values|json_script:"values-data" }}
+
+<script>
+    const labels = JSON.parse(
+        document.getElementById("labels-data").textContent
+    );
+
+    const values = JSON.parse(
+        document.getElementById("values-data").textContent
+    );
+
+    const ctx = document.getElementById('myChart').getContext('2d');
+
+    new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'Mean Values',
+                data: values,
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+</script>
+
+
+    <br><br>
+    <a href="/">Upload another PDF</a> |
+    <a href="/history/">View Analysis History</a>
+
+</body>
+</html>

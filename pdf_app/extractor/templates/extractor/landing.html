@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>PDF Analysis Platform</title>
+
+<style>
+body {
+    margin: 0;
+    font-family: 'Segoe UI', sans-serif;
+    background: linear-gradient(120deg, #0f172a, #020617);
+    color: white;
+    overflow: hidden;
+}
+
+.hero {
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 8%;
+}
+
+.text {
+    max-width: 50%;
+    animation: fadeInLeft 1.2s ease;
+}
+
+.text h1 {
+    font-size: 56px;
+    margin-bottom: 20px;
+}
+
+.text span {
+    color: #38bdf8;
+}
+
+.text p {
+    font-size: 18px;
+    line-height: 1.6;
+    opacity: 0.9;
+}
+
+.start-btn {
+    margin-top: 30px;
+    padding: 14px 32px;
+    font-size: 18px;
+    border: none;
+    border-radius: 40px;
+    background: #38bdf8;
+    color: #020617;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.start-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 25px #38bdf8;
+}
+
+.visual {
+    position: relative;
+    width: 40%;
+    height: 400px;
+    animation: float 6s ease-in-out infinite;
+}
+
+.card {
+    position: absolute;
+    width: 220px;
+    height: 140px;
+    background: #020617;
+    border-radius: 14px;
+    border: 1px solid #38bdf8;
+    padding: 15px;
+    box-shadow: 0 0 30px rgba(56,189,248,0.25);
+}
+
+.card:nth-child(1) { top: 0; left: 60px; }
+.card:nth-child(2) { top: 120px; left: 0; }
+.card:nth-child(3) { top: 200px; left: 120px; }
+
+@keyframes float {
+    0% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+    100% { transform: translateY(0px); }
+}
+
+@keyframes fadeInLeft {
+    from { opacity: 0; transform: translateX(-40px); }
+    to { opacity: 1; transform: translateX(0); }
+}
+</style>
+</head>
+
+<body>
+
+<div class="hero">
+    <div class="text">
+        <h1>PDF <span>Analysis</span> Platform</h1>
+        <p>
+            Upload PDFs, highlight text, extract tables,  
+            run intelligent queries, and visualize results —  
+            all in one powerful, secure platform.
+        </p>
+
+        <button class="start-btn" onclick="location.href='/login/'">
+            🚀 Start Now
+        </button>
+    </div>
+
+    <div class="visual">
+        <div class="card">📄 PDF Upload</div>
+        <div class="card">🔍 Smart Analysis</div>
+        <div class="card">📊 Charts & Insights</div>
+    </div>
+</div>
+
+</body>
+</html>

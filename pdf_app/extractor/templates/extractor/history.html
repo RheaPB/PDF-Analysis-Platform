@@ -1,0 +1,10 @@
+<h2>Your PDF History</h2>
+
+<ul>
+{% for h in history %}
+  <li>
+    {{ h.pdf_name }} –
+    <a href="/load-history/{{ h.id }}/">Open</a>
+  </li>
+{% endfor %}
+</ul>
