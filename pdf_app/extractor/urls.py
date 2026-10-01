@@ -15,5 +15,7 @@ urlpatterns = [
     path("upload/", views.upload_and_extract),
     path("analyze/", views.analyze_selection),
     path("query/", views.query_table),
+    path("dashboard/", views.dashboard_view, name="dashboard"),
+
 ]
 

@@ -4,7 +4,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
 from django.contrib.auth.models import User
-
+from django.shortcuts import render
 import camelot
 import json
 import tempfile
@@ -15,7 +15,9 @@ import os
 def landing_view(request):
     return render(request, "extractor/landing.html")
 
-
+@login_required
+def dashboard_view(request):
+    return render(request, "extractor/react_index.html")
 # ============================
 # MAIN UI (LOGIN REQUIRED)
 # ============================

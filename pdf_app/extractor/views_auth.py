@@ -17,7 +17,8 @@ def login_view(request):
 
         if user is not None:
             login(request, user)
-            return redirect("/app/")  # ✅ IMPORTANT
+            return redirect("/dashboard/")
+  # ✅ IMPORTANT
         else:
             return render(
                 request,
@@ -55,3 +56,6 @@ def register_view(request):
 def logout_view(request):
     logout(request)
     return redirect("/login/")
+
+
+
